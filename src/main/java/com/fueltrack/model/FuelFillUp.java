@@ -40,7 +40,7 @@ public class FuelFillUp {
     @Column(name = "full_tank", nullable = false)
     private boolean fullTank;
 
-    protected FuelFillUp() {
+    public FuelFillUp() {
     }
 
     public Long getId() {

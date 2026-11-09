@@ -93,6 +93,22 @@ public class ImageStorageService {
         return readPath(filename);
     }
 
+    /**
+     * Deletes a stored UUID-named photo if it exists.
+     *
+     * @param filename generated stored filename
+     */
+    public void delete(String filename) {
+        if (filename == null || !filename.matches("[0-9a-fA-F-]{36}\\.jpg")) {
+            throw new ImageUploadException("Photo filename is invalid.");
+        }
+        try {
+            Files.deleteIfExists(uploadDirectory.resolve(filename).normalize());
+        } catch (IOException exception) {
+            throw new ImageUploadException("The stored photo could not be deleted.", exception);
+        }
+    }
+
     private byte[] readPath(String filename) {
         if (filename == null || !filename.matches("[0-9a-fA-F-]{36}\\.jpg")) {
             throw new ImageUploadException("Photo not found.");

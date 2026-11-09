@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mileage summary - FuelTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<main class="container py-4">
+    <a th:href="@{/}">FuelTrack</a>
+    <h1 class="mt-3">Mileage summary</h1>
+    <nav class="mb-4">
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/readings}">Reading history</a>
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/fill-ups}">Fuel fill-ups</a>
+    </nav>
+
+    <section class="mb-5">
+        <h2 class="h4">Daily distance</h2>
+        <p class="text-body-secondary">Last odometer reading minus first reading for each local calendar day.</p>
+        <div class="table-responsive" th:if="${!#lists.isEmpty(dailySummaries)}">
+            <table class="table table-striped">
+                <thead><tr><th>Date</th><th>Vehicle</th><th>First (km)</th><th>Last (km)</th><th>Distance (km)</th></tr></thead>
+                <tbody>
+                <tr th:each="summary : ${dailySummaries}">
+                    <td th:text="${summary.day}"></td>
+                    <td th:text="${summary.vehicleName}"></td>
+                    <td th:text="${summary.firstReadingKm}"></td>
+                    <td th:text="${summary.lastReadingKm}"></td>
+                    <td th:text="${summary.distanceKm}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${#lists.isEmpty(dailySummaries)}">No mileage readings have been recorded yet.</p>
+    </section>
+
+    <section>
+        <h2 class="h4">Monthly distance</h2>
+        <div class="table-responsive" th:if="${!#lists.isEmpty(monthlySummaries)}">
+            <table class="table table-striped">
+                <thead><tr><th>Month</th><th>Vehicle</th><th>Total distance (km)</th></tr></thead>
+                <tbody>
+                <tr th:each="summary : ${monthlySummaries}">
+                    <td th:text="${summary.month}"></td>
+                    <td th:text="${summary.vehicleName}"></td>
+                    <td th:text="${summary.distanceKm}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${#lists.isEmpty(monthlySummaries)}">Monthly totals will appear after you record readings.</p>
+    </section>
+</main>
+</body>
+</html>

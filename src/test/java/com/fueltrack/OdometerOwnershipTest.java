@@ -14,6 +14,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,5 +35,16 @@ class OdometerOwnershipTest {
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Reading not found");
         verify(readingRepository).findByIdAndVehicleUserId(42L, 7L);
+    }
+
+    @Test
+    void userCannotDeleteAnotherUsersReading() {
+        when(readingRepository.findByIdAndVehicleUserId(42L, 7L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> readingService.deleteOwned(42L, 7L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Reading not found");
+        verify(readingRepository).findByIdAndVehicleUserId(42L, 7L);
+        verify(readingRepository, never()).delete(any(OdometerReading.class));
     }
 }

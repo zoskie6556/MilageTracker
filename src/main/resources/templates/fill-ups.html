@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fuel fill-ups - FuelTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<main class="container py-4">
+    <a th:href="@{/}">FuelTrack</a>
+    <h1 class="mt-3">Fuel fill-ups</h1>
+    <nav class="mb-3">
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/summary}">Mileage summary</a>
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/readings}">Reading history</a>
+    </nav>
+    <div class="alert alert-success" th:if="${fillUpSaved}">Fill-up saved.</div>
+    <div class="alert alert-success" th:if="${fillUpUpdated}">Fill-up updated.</div>
+    <div class="alert alert-success" th:if="${fillUpDeleted}">Fill-up deleted.</div>
+    <div class="alert alert-info" th:if="${#lists.isEmpty(vehicles)}">
+        Add a vehicle before recording a fill-up. <a th:href="@{/vehicles}">Manage vehicles</a>
+    </div>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h2 class="h4" th:text="${editingFillUpId == null ? 'Add fill-up' : 'Edit fill-up'}">Add fill-up</h2>
+            <form method="post"
+                  th:action="${editingFillUpId == null ? '/fill-ups' : '/fill-ups/' + editingFillUpId + '/edit'}"
+                  th:object="${fillUpForm}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="vehicleId">Vehicle</label>
+                        <select class="form-select" id="vehicleId" th:field="*{vehicleId}" required>
+                            <option value="">Choose a vehicle</option>
+                            <option th:each="vehicle : ${vehicles}" th:value="${vehicle.id}" th:text="${vehicle.name}"></option>
+                        </select>
+                        <div class="text-danger" th:errors="*{vehicleId}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="filledAt">Date and time</label>
+                        <input class="form-control" id="filledAt" th:field="*{filledAt}" type="datetime-local" required>
+                        <div class="text-danger" th:errors="*{filledAt}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="litres">Litres</label>
+                        <input class="form-control" id="litres" th:field="*{litres}" type="number" min="0.001" step="0.001" required>
+                        <div class="text-danger" th:errors="*{litres}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="totalCost">Total cost</label>
+                        <input class="form-control" id="totalCost" th:field="*{totalCost}" type="number" min="0" step="0.01" required>
+                        <div class="text-danger" th:errors="*{totalCost}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="odometerKm">Odometer (km)</label>
+                        <input class="form-control" id="odometerKm" th:field="*{odometerKm}" type="number" min="0.01" step="0.01" required>
+                        <div class="text-danger" th:errors="*{odometerKm}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="fullTank">Tank filled to full?</label>
+                        <select class="form-select" id="fullTank" th:field="*{fullTank}">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit"
+                        th:text="${editingFillUpId == null ? 'Save fill-up' : 'Update fill-up'}">Save fill-up</button>
+                <a class="btn btn-outline-secondary mt-3" th:if="${editingFillUpId != null}" th:href="@{/fill-ups}">Cancel</a>
+            </form>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="h4">Fill-up history</h2>
+        <div class="table-responsive" th:if="${!#lists.isEmpty(fillUps)}">
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Date</th><th>Vehicle</th><th>Odometer</th><th>Litres</th><th>Cost</th><th>Full tank</th><th>Actions</th></tr></thead>
+                <tbody>
+                <tr th:each="fillUp : ${fillUps}">
+                    <td th:text="${#temporals.format(fillUp.filledAt.atZone(T(java.time.ZoneId).of('Africa/Gaborone')), 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${fillUp.vehicle.name}"></td>
+                    <td th:text="${fillUp.odometerKm} + ' km'"></td>
+                    <td th:text="${fillUp.litres}"></td>
+                    <td th:text="${fillUp.totalCost}"></td>
+                    <td th:text="${fillUp.fullTank ? 'Yes' : 'No'}"></td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/fill-ups/{id}/edit(id=${fillUp.id})}">Edit</a>
+                        <form class="d-inline" method="post" th:action="@{/fill-ups/{id}/delete(id=${fillUp.id})}"
+                              onsubmit="return confirm('Delete this fill-up?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${#lists.isEmpty(fillUps)}">No fuel fill-ups have been recorded yet.</p>
+    </section>
+
+    <section>
+        <h2 class="h4">Consumption between full tanks</h2>
+        <p class="text-body-secondary">Includes partial fill-ups between consecutive full tanks.</p>
+        <div class="table-responsive" th:if="${!#lists.isEmpty(consumptions)}">
+            <table class="table table-striped">
+                <thead><tr><th>Vehicle</th><th>Period</th><th>Distance (km)</th><th>Fuel (L)</th><th>L/100 km</th><th>Cost/km</th></tr></thead>
+                <tbody>
+                <tr th:each="consumption : ${consumptions}">
+                    <td th:text="${consumption.vehicleName}"></td>
+                    <td th:text="${#temporals.format(consumption.from.atZone(T(java.time.ZoneId).of('Africa/Gaborone')), 'yyyy-MM-dd') + ' - ' + #temporals.format(consumption.to.atZone(T(java.time.ZoneId).of('Africa/Gaborone')), 'yyyy-MM-dd')}"></td>
+                    <td th:text="${consumption.distanceKm}"></td>
+                    <td th:text="${consumption.litres}"></td>
+                    <td th:text="${consumption.litresPer100Km}"></td>
+                    <td th:text="${consumption.costPerKm}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${#lists.isEmpty(consumptions)}">Record two full-tank fill-ups with increasing odometer readings to see consumption.</p>
+    </section>
+</main>
+</body>
+</html>

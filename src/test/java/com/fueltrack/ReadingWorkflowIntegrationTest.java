@@ -1,10 +1,14 @@
 package com.fueltrack;
 
 import com.fueltrack.model.OdometerReading;
+import com.fueltrack.model.DayMoment;
+import com.fueltrack.model.FuelFillUp;
 import com.fueltrack.model.Role;
+import com.fueltrack.model.ReadingSource;
 import com.fueltrack.model.User;
 import com.fueltrack.model.Vehicle;
 import com.fueltrack.repository.OdometerReadingRepository;
+import com.fueltrack.repository.FuelFillUpRepository;
 import com.fueltrack.repository.UserRepository;
 import com.fueltrack.repository.VehicleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +61,9 @@ class ReadingWorkflowIntegrationTest {
     private OdometerReadingRepository readingRepository;
 
     @Autowired
+    private FuelFillUpRepository fillUpRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private User user;
@@ -64,6 +71,7 @@ class ReadingWorkflowIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        fillUpRepository.deleteAll();
         readingRepository.deleteAll();
         vehicleRepository.deleteAll();
         userRepository.deleteAll();
@@ -195,5 +203,114 @@ class ReadingWorkflowIntegrationTest {
                         .with(user(user.getEmail()).roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("readings/history"));
+    }
+
+    @Test
+    void ownerCanEditAndDeleteAReading() throws Exception {
+        OdometerReading reading = new OdometerReading();
+        reading.setVehicle(vehicle);
+        reading.setReadingKm(new java.math.BigDecimal("90000"));
+        reading.setTakenAt(Instant.parse("2026-11-09T06:00:00Z"));
+        reading.setDayMoment(DayMoment.START_OF_DAY);
+        reading.setSource(ReadingSource.AI);
+        reading = readingRepository.save(reading);
+
+        mockMvc.perform(get("/readings/{id}/edit", reading.getId())
+                        .with(user(user.getEmail()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("readings/edit"));
+
+        mockMvc.perform(post("/readings/{id}/edit", reading.getId())
+                        .with(user(user.getEmail()).roles("USER"))
+                        .with(csrf())
+                        .param("vehicleId", vehicle.getId().toString())
+                        .param("readingKm", "90001")
+                        .param("takenAt", "2026-11-09T08:00")
+                        .param("dayMoment", "END_OF_DAY")
+                        .param("note", "Corrected"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/readings"));
+
+        OdometerReading updated = readingRepository.findById(reading.getId()).orElseThrow();
+        assertThat(updated.getSource()).isEqualTo(ReadingSource.AI_EDITED);
+        assertThat(updated.getReadingKm()).isEqualByComparingTo("90001");
+
+        mockMvc.perform(post("/readings/{id}/delete", reading.getId())
+                        .with(user(user.getEmail()).roles("USER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/readings"));
+        assertThat(readingRepository.existsById(reading.getId())).isFalse();
+    }
+
+    @Test
+    void ownerCanCreateEditAndDeleteAFuelFillUp() throws Exception {
+        mockMvc.perform(get("/fill-ups").with(user(user.getEmail()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fill-ups"));
+
+        MvcResult create = mockMvc.perform(post("/fill-ups")
+                        .with(user(user.getEmail()).roles("USER"))
+                        .with(csrf())
+                        .param("vehicleId", vehicle.getId().toString())
+                        .param("filledAt", "2026-11-09T08:00")
+                        .param("litres", "35.5")
+                        .param("totalCost", "52.75")
+                        .param("odometerKm", "90500")
+                        .param("fullTank", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/fill-ups"))
+                .andReturn();
+
+        FuelFillUp fillUp = fillUpRepository.findAll().getFirst();
+        MockHttpSession session = (MockHttpSession) create.getRequest().getSession(false);
+        mockMvc.perform(get("/fill-ups/{id}/edit", fillUp.getId())
+                        .with(user(user.getEmail()).roles("USER"))
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fill-ups"));
+
+        mockMvc.perform(post("/fill-ups/{id}/edit", fillUp.getId())
+                        .with(user(user.getEmail()).roles("USER"))
+                        .with(csrf())
+                        .param("vehicleId", vehicle.getId().toString())
+                        .param("filledAt", "2026-11-09T09:00")
+                        .param("litres", "36")
+                        .param("totalCost", "54")
+                        .param("odometerKm", "90510")
+                        .param("fullTank", "false"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/fill-ups"));
+
+        assertThat(fillUpRepository.findById(fillUp.getId()).orElseThrow().isFullTank()).isFalse();
+        mockMvc.perform(post("/fill-ups/{id}/delete", fillUp.getId())
+                        .with(user(user.getEmail()).roles("USER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/fill-ups"));
+        assertThat(fillUpRepository.existsById(fillUp.getId())).isFalse();
+    }
+
+    @Test
+    void ownerCanViewDailyAndMonthlyMileageSummary() throws Exception {
+        OdometerReading first = new OdometerReading();
+        first.setVehicle(vehicle);
+        first.setReadingKm(new java.math.BigDecimal("1000"));
+        first.setTakenAt(Instant.parse("2026-11-09T06:00:00Z"));
+        first.setDayMoment(DayMoment.START_OF_DAY);
+        first.setSource(ReadingSource.MANUAL);
+        readingRepository.save(first);
+
+        OdometerReading last = new OdometerReading();
+        last.setVehicle(vehicle);
+        last.setReadingKm(new java.math.BigDecimal("1080"));
+        last.setTakenAt(Instant.parse("2026-11-09T15:00:00Z"));
+        last.setDayMoment(DayMoment.END_OF_DAY);
+        last.setSource(ReadingSource.AI);
+        readingRepository.save(last);
+
+        mockMvc.perform(get("/summary").with(user(user.getEmail()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("summary"));
     }
 }

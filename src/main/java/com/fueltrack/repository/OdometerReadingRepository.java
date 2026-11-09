@@ -16,6 +16,9 @@ public interface OdometerReadingRepository extends JpaRepository<OdometerReading
     Optional<OdometerReading> findFirstByVehicleIdAndTakenAtBeforeOrderByTakenAtDesc(
             Long vehicleId, Instant takenAt);
 
+    Optional<OdometerReading> findFirstByVehicleIdAndTakenAtBeforeAndIdNotOrderByTakenAtDesc(
+            Long vehicleId, Instant takenAt, Long excludedId);
+
     @Query("select reading from OdometerReading reading join fetch reading.vehicle "
             + "where reading.vehicle.user.id = :userId order by reading.takenAt desc")
     List<OdometerReading> findAllOwnedByUserIdOrderByTakenAtDesc(@Param("userId") Long userId);

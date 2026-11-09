@@ -5,6 +5,7 @@ import com.fueltrack.dto.ManualReadingForm;
 import com.fueltrack.dto.PendingPhoto;
 import com.fueltrack.dto.PendingReading;
 import com.fueltrack.dto.PhotoUploadForm;
+import com.fueltrack.dto.ReadingEditForm;
 import com.fueltrack.model.DayMoment;
 import com.fueltrack.model.OdometerReading;
 import com.fueltrack.model.ReadingSource;
@@ -279,6 +280,71 @@ public class ReadingController {
         return "readings/history";
     }
 
+    @GetMapping("/readings/{readingId}/edit")
+    public String editForm(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long readingId,
+            Model model) {
+        User user = currentUserService.requireUser(principal.getUsername());
+        OdometerReading reading = readingService.getOwnedReading(readingId, user.getId());
+        ReadingEditForm form = new ReadingEditForm();
+        form.setVehicleId(reading.getVehicle().getId());
+        form.setReadingKm(reading.getReadingKm().intValueExact());
+        form.setTakenAt(reading.getTakenAt().atZone(DISPLAY_ZONE).toLocalDateTime());
+        form.setDayMoment(reading.getDayMoment());
+        form.setNote(reading.getNote());
+        model.addAttribute("readingEditForm", form);
+        model.addAttribute("reading", reading);
+        addEditOptions(model, user, readingId, form);
+        return "readings/edit";
+    }
+
+    @PostMapping("/readings/{readingId}/edit")
+    public String updateReading(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long readingId,
+            @Valid @ModelAttribute("readingEditForm") ReadingEditForm form,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        User user = currentUserService.requireUser(principal.getUsername());
+        OdometerReading reading = readingService.getOwnedReading(readingId, user.getId());
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("reading", reading);
+            addEditOptions(model, user, readingId, form);
+            return "readings/edit";
+        }
+        try {
+            readingService.updateOwned(readingId, user.getId(), form);
+        } catch (WarningConfirmationRequiredException exception) {
+            model.addAttribute("warnings", exception.getWarnings());
+            model.addAttribute("reading", reading);
+            addEditOptions(model, user, readingId, form);
+            return "readings/edit";
+        } catch (EntityNotFoundException exception) {
+            bindingResult.rejectValue("vehicleId", "notOwned", "Choose one of your vehicles.");
+            model.addAttribute("reading", reading);
+            addEditOptions(model, user, readingId, form);
+            return "readings/edit";
+        }
+        redirectAttributes.addFlashAttribute("readingUpdated", true);
+        return "redirect:/readings";
+    }
+
+    @PostMapping("/readings/{readingId}/delete")
+    public String deleteReading(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable Long readingId,
+            RedirectAttributes redirectAttributes) {
+        User user = currentUserService.requireUser(principal.getUsername());
+        String photoPath = readingService.deleteOwned(readingId, user.getId());
+        if (photoPath != null) {
+            imageStorageService.delete(photoPath);
+        }
+        redirectAttributes.addFlashAttribute("readingDeleted", true);
+        return "redirect:/readings";
+    }
+
     @GetMapping("/readings/photo/{filename:.+}")
     public ResponseEntity<ByteArrayResource> photo(
             @AuthenticationPrincipal UserDetails principal,
@@ -321,6 +387,22 @@ public class ReadingController {
         }
         model.addAttribute("pendingReading", pending);
         model.addAttribute("sourceLabel", sourceLabel(pending.source()));
+    }
+
+    private void addEditOptions(Model model, User user, Long readingId, ReadingEditForm form) {
+        addVehicles(model, user);
+        if (model.getAttribute("warnings") == null) {
+            List<ReadingWarning> warnings = List.of();
+            if (form.getVehicleId() != null && form.getReadingKm() != null && form.getTakenAt() != null) {
+                try {
+                    warnings = readingService.findEditWarnings(user.getId(), readingId, form.getVehicleId(),
+                            form.getTakenAt().atZone(DISPLAY_ZONE).toInstant(), form.getReadingKm());
+                } catch (EntityNotFoundException exception) {
+                    model.addAttribute("vehicleNotOwned", true);
+                }
+            }
+            model.addAttribute("warnings", warnings);
+        }
     }
 
     private static ConfirmReadingForm toForm(PendingReading pending) {
