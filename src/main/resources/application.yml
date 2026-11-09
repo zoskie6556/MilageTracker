@@ -27,3 +27,6 @@ app:
   upload-dir: ${UPLOAD_DIR:./uploads}
   ai:
     model: ${APP_AI_MODEL:claude-sonnet-5-5}
+    rate-limit:
+      calls: ${APP_AI_RATE_LIMIT_CALLS:5}
+      window: ${APP_AI_RATE_LIMIT_WINDOW:PT1M}

@@ -11,6 +11,15 @@ FuelTrack helps drivers record odometer readings and track vehicle mileage. Add 
 - Warn on lower readings or jumps greater than 1,000 km; users must explicitly confirm an override.
 - View personal reading history with source badges and optional photo thumbnails.
 
+## Phase 3 and administration
+
+- View daily distance (last reading minus first reading per Gaborone-local day) and monthly totals.
+- Record, edit and delete fuel fill-ups. Consumption between consecutive full tanks includes partial fill-ups within that interval and reports litres per 100 km and cost per kilometre.
+- Edit or delete personal odometer readings; ownership is enforced on the server.
+- Administrators can search and paginate users, review read-only vehicle/reading/fill-up details, and enable or disable accounts. Password hashes are not included in admin page data.
+- Anthropic AI calls are limited to five per user per minute by default. Override with `APP_AI_RATE_LIMIT_CALLS` and `APP_AI_RATE_LIMIT_WINDOW` (ISO-8601 duration, e.g. `PT1M`). When the limit is reached, the uploaded photo is retained for manual entry.
+- Friendly error pages cover access denied, missing pages, oversized uploads, and unexpected server errors.
+
 ## Run
 
 Use Java 21 and the Maven Wrapper:

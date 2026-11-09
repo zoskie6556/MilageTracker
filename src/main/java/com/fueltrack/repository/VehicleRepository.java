@@ -11,4 +11,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findAllByUserIdOrderByName(Long userId);
 
     Optional<Vehicle> findByIdAndUserId(Long id, Long userId);
+
+    long countByUserId(Long userId);
 }

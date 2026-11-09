@@ -120,7 +120,7 @@ public class ReadingController {
         try {
             session.removeAttribute(PENDING_READING);
             session.removeAttribute(PENDING_PHOTO);
-            PhotoAnalysis analysis = photoAnalysisService.analyze(form.getPhoto());
+            PhotoAnalysis analysis = photoAnalysisService.analyze(form.getPhoto(), user.getId());
             if (!analysis.succeeded()) {
                 session.setAttribute(PENDING_PHOTO, new PendingPhoto(
                         user.getId(), form.getVehicleId(), analysis.photoPath(), form.getTakenAt(), form.getDayMoment(),

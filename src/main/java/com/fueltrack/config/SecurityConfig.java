@@ -16,7 +16,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/register", "/login", "/errors/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .failureUrl("/login?error"))
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout"))
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedPage("/errors/403"))
                 .build();
     }
 
