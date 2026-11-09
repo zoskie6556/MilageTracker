@@ -1,0 +1,11 @@
+{
+  "name": "fueltrack-ui",
+  "private": true,
+  "scripts": {
+    "css:build": "tailwindcss -i ./src/main/resources/tailwind.css -o ./src/main/resources/static/css/app.css --minify",
+    "css:watch": "tailwindcss -i ./src/main/resources/tailwind.css -o ./src/main/resources/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

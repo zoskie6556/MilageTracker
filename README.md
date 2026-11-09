@@ -38,6 +38,10 @@ Set `DATABASE_URL`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` for production.
 
 Run tests with `./mvnw test` (or `mvnw.cmd test` on Windows). Tests use H2 and mock the Anthropic endpoint.
 
+## User interface
+
+The server-rendered pages use a locally compiled Tailwind CSS theme, inline SVG icons, dismissible toast notifications, and submit loading indicators. The compiled stylesheet is checked in, so running the app does not require Node.js. To rebuild it after changing the theme, install Node.js and run `npm install` followed by `npm run css:build`; use `npm run css:watch` while iterating on styles.
+
 ## Reading entry flow
 
 See [the sequence diagram](docs/sequence-reading.md) for both the photo/AI and manual paths, including AI-failure fallback.

@@ -3,6 +3,7 @@ package com.fueltrack.dto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ public class FuelFillUpForm {
     private Long vehicleId;
 
     @NotNull(message = "Choose the fill-up date and time.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime filledAt;
 
     @NotNull(message = "Enter the number of litres.")

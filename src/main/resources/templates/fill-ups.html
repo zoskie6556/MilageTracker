@@ -4,24 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Fuel fill-ups - FuelTrack</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="theme-color" content="#132e35">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body class="bg-light">
+<nav th:replace="~{fragments/layout :: navigation}"></nav>
 <main class="container py-4">
-    <a th:href="@{/}">FuelTrack</a>
-    <h1 class="mt-3">Fuel fill-ups</h1>
+    <p class="ft-page-kicker">Fuel log</p>
+    <h1 class="mb-2">Fuel fill-ups</h1>
+    <p class="mb-5 text-body-secondary">Keep an eye on fill-ups, efficiency, and cost per kilometre.</p>
     <nav class="mb-3">
         <a class="btn btn-outline-primary btn-sm" th:href="@{/summary}">Mileage summary</a>
         <a class="btn btn-outline-primary btn-sm" th:href="@{/readings}">Reading history</a>
     </nav>
-    <div class="alert alert-success" th:if="${fillUpSaved}">Fill-up saved.</div>
-    <div class="alert alert-success" th:if="${fillUpUpdated}">Fill-up updated.</div>
-    <div class="alert alert-success" th:if="${fillUpDeleted}">Fill-up deleted.</div>
+    <div class="alert alert-success" data-toast th:if="${fillUpSaved}">Fill-up saved.</div>
+    <div class="alert alert-success" data-toast th:if="${fillUpUpdated}">Fill-up updated.</div>
+    <div class="alert alert-success" data-toast th:if="${fillUpDeleted}">Fill-up deleted.</div>
     <div class="alert alert-info" th:if="${#lists.isEmpty(vehicles)}">
         Add a vehicle before recording a fill-up. <a th:href="@{/vehicles}">Manage vehicles</a>
     </div>
 
-    <section class="card mb-4">
+    <section class="card mb-6">
         <div class="card-body">
             <h2 class="h4" th:text="${editingFillUpId == null ? 'Add fill-up' : 'Edit fill-up'}">Add fill-up</h2>
             <form method="post"
@@ -121,5 +124,6 @@
         <p th:if="${#lists.isEmpty(consumptions)}">Record two full-tank fill-ups with increasing odometer readings to see consumption.</p>
     </section>
 </main>
+<div th:replace="~{fragments/layout :: ui}"></div>
 </body>
 </html>

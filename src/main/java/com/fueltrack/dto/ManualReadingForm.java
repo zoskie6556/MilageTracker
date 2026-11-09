@@ -4,6 +4,7 @@ import com.fueltrack.model.DayMoment;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ public class ManualReadingForm {
     private Integer readingKm;
 
     @NotNull(message = "Choose the date and time.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime takenAt;
 
     @NotNull(message = "Choose start or end of day.")

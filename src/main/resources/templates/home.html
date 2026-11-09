@@ -4,30 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FuelTrack</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="theme-color" content="#132e35">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="navbar navbar-expand bg-dark navbar-dark">
-    <div class="container">
-        <a class="navbar-brand" th:href="@{/}">FuelTrack</a>
-        <div class="navbar-nav ms-auto">
-            <a class="nav-link" th:href="@{/readings}">History</a>
-            <a class="nav-link" th:href="@{/vehicles}">Vehicles</a>
-            <a class="nav-link" th:if="${isAdmin}" th:href="@{/admin/users}">Admin</a>
-            <form class="nav-item" method="post" th:action="@{/logout}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button class="nav-link btn" type="submit">Sign out</button>
-            </form>
-        </div>
-    </div>
-</nav>
+<nav th:replace="~{fragments/layout :: navigation}"></nav>
 <main class="container py-4">
-    <h1>Track your mileage</h1>
-    <p class="text-body-secondary">Record odometer readings and keep your vehicle history up to date.</p>
-    <a class="btn btn-primary" th:href="@{/readings/new}">Add reading</a>
-    <a class="btn btn-outline-secondary" th:href="@{/readings}">View history</a>
-    <a class="btn btn-outline-secondary" th:href="@{/summary}">Mileage summary</a>
-    <a class="btn btn-outline-secondary" th:href="@{/fill-ups}">Fuel fill-ups</a>
+    <section class="relative mb-8 overflow-hidden rounded-3xl bg-ink px-6 py-10 text-white shadow-float sm:px-10 sm:py-14">
+        <div class="pointer-events-none absolute -right-10 -top-20 h-72 w-72 rounded-full bg-brand/30 blur-3xl"></div>
+        <div class="relative max-w-2xl">
+            <p class="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Your mileage, in motion</p>
+            <h1 class="max-w-xl text-white">Every trip tells a story.</h1>
+            <p class="mt-4 max-w-xl text-base leading-relaxed text-slate-300">
+                Keep your odometer, fuel costs, and vehicle history all in one place.
+            </p>
+            <div class="mt-7 flex flex-wrap gap-3">
+                <a class="btn btn-primary !bg-accent !text-ink hover:!bg-amber-300 hover:!text-ink"
+                   th:href="@{/readings/new}">
+                    <svg aria-hidden="true" class="ft-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round"><path d="M12 5v14m-7-7h14"></path></svg>
+                    Add a reading
+                </a>
+                <a class="btn border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                   th:href="@{/summary}">View your summary</a>
+            </div>
+        </div>
+    </section>
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <a class="ft-panel group no-underline transition hover:-translate-y-1 hover:shadow-float" th:href="@{/readings}">
+            <span class="ft-feature-icon">
+                <svg aria-hidden="true" class="ft-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"></path><path d="M8 12h8m-8-4h5m-5 8h8"></path></svg>
+            </span>
+            <h2 class="h4">Reading history</h2>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-body-secondary">See every odometer update in one timeline.</p>
+        </a>
+        <a class="ft-panel group no-underline transition hover:-translate-y-1 hover:shadow-float" th:href="@{/summary}">
+            <span class="ft-feature-icon">
+                <svg aria-hidden="true" class="ft-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-5 5"></path></svg>
+            </span>
+            <h2 class="h4">Mileage summary</h2>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-body-secondary">Track daily distances and monthly totals.</p>
+        </a>
+        <a class="ft-panel group no-underline transition hover:-translate-y-1 hover:shadow-float" th:href="@{/fill-ups}">
+            <span class="ft-feature-icon">
+                <svg aria-hidden="true" class="ft-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10M9 21V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v16M7 8h10M17 7h2l2 2v8a2 2 0 0 1-4 0v-4"></path></svg>
+            </span>
+            <h2 class="h4">Fuel fill-ups</h2>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-body-secondary">Log fuel and understand your running costs.</p>
+        </a>
+        <a class="ft-panel group no-underline transition hover:-translate-y-1 hover:shadow-float" th:href="@{/vehicles}">
+            <span class="ft-feature-icon">
+                <svg aria-hidden="true" class="ft-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.3-5.8a2 2 0 0 0-2-1.6H8.3a2 2 0 0 0-2 1.6L5 17Z"></path><path d="M7 17v2m10-2v2M7.5 13h.01M16.5 13h.01"></path></svg>
+            </span>
+            <h2 class="h4">Your vehicles</h2>
+            <p class="mb-0 mt-2 text-sm leading-relaxed text-body-secondary">Manage the cars you want to keep on track.</p>
+        </a>
+    </section>
 </main>
+<div th:replace="~{fragments/layout :: ui}"></div>
 </body>
 </html>
