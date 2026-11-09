@@ -40,13 +40,17 @@ public class OdometerReading {
     @Column(nullable = false, length = 10)
     private ReadingSource source;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "day_moment", nullable = false, length = 20)
+    private DayMoment dayMoment;
+
     @Column(name = "ai_confidence", length = 10)
     private String aiConfidence;
 
     @Column(length = 500)
     private String note;
 
-    protected OdometerReading() {
+    public OdometerReading() {
     }
 
     public Long getId() {
@@ -91,6 +95,14 @@ public class OdometerReading {
 
     public void setSource(ReadingSource source) {
         this.source = source;
+    }
+
+    public DayMoment getDayMoment() {
+        return dayMoment;
+    }
+
+    public void setDayMoment(DayMoment dayMoment) {
+        this.dayMoment = dayMoment;
     }
 
     public String getAiConfidence() {

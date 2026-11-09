@@ -42,7 +42,7 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle")
     private List<FuelFillUp> fuelFillUps = new ArrayList<>();
 
-    protected Vehicle() {
+    public Vehicle() {
     }
 
     public Long getId() {

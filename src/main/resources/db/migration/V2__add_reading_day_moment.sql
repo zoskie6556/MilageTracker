@@ -1,0 +1,2 @@
+ALTER TABLE odometer_readings
+    ADD COLUMN day_moment VARCHAR(20) NOT NULL DEFAULT 'START_OF_DAY';

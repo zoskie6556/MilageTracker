@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reading history - FuelTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<main class="container py-4">
+    <a th:href="@{/}">FuelTrack</a>
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h1 class="h2">Reading history</h1>
+        <a class="btn btn-primary" th:href="@{/readings/new}">Add reading</a>
+    </div>
+    <div class="alert alert-success" th:if="${readingSaved}">Reading saved.</div>
+    <div class="table-responsive" th:if="${!#lists.isEmpty(readings)}">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr><th>Date and time</th><th>Vehicle</th><th>Odometer</th><th>Day</th><th>Source</th><th>Photo</th><th>Note</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="reading : ${readings}">
+                <td th:text="${#temporals.format(reading.takenAt.atZone(T(java.time.ZoneId).of('Africa/Gaborone')), 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${reading.vehicle.name}"></td>
+                <td th:text="${reading.readingKm} + ' km'"></td>
+                <td th:text="${reading.dayMoment == T(com.fueltrack.model.DayMoment).START_OF_DAY ? 'Start of day' : 'End of day'}"></td>
+                <td>
+                    <span th:class="'badge ' + (${reading.source.name() == 'AI'} ? 'text-bg-info' : (${reading.source.name() == 'AI_EDITED'} ? 'text-bg-warning' : 'text-bg-secondary'))"
+                          th:text="${reading.source.name() == 'AI' ? 'AI' : (reading.source.name() == 'AI_EDITED' ? 'AI edited' : 'Manual')}">Manual</span>
+                </td>
+                <td>
+                    <a th:if="${reading.photoPath}" th:href="@{/readings/photo/{name}(name=${reading.photoPath})}">
+                        <img class="img-thumbnail" style="max-width: 90px; max-height: 70px"
+                             th:src="@{/readings/photo/{name}(name=${reading.photoPath})}" alt="Odometer photo">
+                    </a>
+                    <span th:unless="${reading.photoPath}" class="text-body-secondary">—</span>
+                </td>
+                <td th:text="${reading.note}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p th:if="${#lists.isEmpty(readings)}">No readings yet. <a th:href="@{/readings/new}">Add your first reading</a>.</p>
+</main>
+</body>
+</html>

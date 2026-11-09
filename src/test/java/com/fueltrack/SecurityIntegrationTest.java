@@ -2,7 +2,9 @@ package com.fueltrack;
 
 import com.fueltrack.model.Role;
 import com.fueltrack.model.User;
+import com.fueltrack.repository.OdometerReadingRepository;
 import com.fueltrack.repository.UserRepository;
+import com.fueltrack.repository.VehicleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +35,18 @@ class SecurityIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private OdometerReadingRepository readingRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void createNormalUser() {
+        readingRepository.deleteAll();
+        vehicleRepository.deleteAll();
         userRepository.deleteAll();
         User user = new User();
         user.setEmail("user@example.com");
